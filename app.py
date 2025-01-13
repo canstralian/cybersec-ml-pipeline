@@ -4,7 +4,7 @@ import numpy as np
 from data_processing import DataProcessor
 from model_training import ModelTrainer
 from visualizations import Visualizer
-from utils import load_data, get_feature_names
+from utils import load_data, get_feature_names, save_model, load_saved_model, list_saved_models
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -164,6 +164,30 @@ def main():
                         for metric, value in metrics.items():
                             st.metric(metric, f"{value:.4f}")
 
+                        # Add model export section
+                        st.subheader("Export Model")
+                        model_name = st.text_input("Model Name (optional)")
+                        if st.button("Save Model"):
+                            try:
+                                # Save model and metadata
+                                preprocessing_params = {
+                                    'feature_engineering_config': feature_engineering_config,
+                                    'handling_strategy': handling_strategy,
+                                    'scaling_method': scaling_method
+                                }
+
+                                model_path, metadata_path = save_model(
+                                    model,
+                                    feature_cols,
+                                    preprocessing_params,
+                                    metrics,
+                                    model_name
+                                )
+
+                                st.success(f"Model saved successfully! Files:\n- {model_path}\n- {metadata_path}")
+                            except Exception as e:
+                                st.error(f"Error saving model: {str(e)}")
+
                     with col8:
                         if not use_pca:  # Skip feature importance for PCA
                             st.subheader("Feature Importance")
@@ -195,6 +219,23 @@ def main():
 
     else:
         st.info("Please upload a dataset to begin.")
+
+    # Add Model Management Section
+    st.header("5. Saved Models")
+    try:
+        saved_models = list_saved_models()
+        if saved_models:
+            for model_info in saved_models:
+                with st.expander(f"Model: {model_info['name']}"):
+                    st.write(f"Type: {model_info['type']}")
+                    st.write(f"Created: {model_info['created_at']}")
+                    st.write("Performance Metrics:")
+                    for metric, value in model_info['metrics'].items():
+                        st.metric(metric, f"{value:.4f}")
+        else:
+            st.info("No saved models found.")
+    except Exception as e:
+        st.error(f"Error loading saved models: {str(e)}")
 
 if __name__ == "__main__":
     main()
