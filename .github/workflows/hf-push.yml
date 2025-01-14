@@ -1,29 +1,49 @@
-name: Push to Hugging Face
+name: Push to Hugging Face Hub
 
 on:
   push:
     branches:
-      - main  # Trigger on pushes to the main branch
+      - main
 
 jobs:
-  push_to_hf:
+  push-to-hub:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Install Hugging Face CLI
-        run: pip install huggingface-hub
-
-      - name: Log in to Hugging Face
-        run: huggingface-cli login --token ${{ secrets.HF_TOKEN }}
-
-      - name: Push to Hugging Face
+      - uses: actions/checkout@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
         run: |
-          huggingface-cli repo create <repository-name> --type model --yes
-          git clone https://huggingface.co/<your-username>/<repository-name> hf-repo
-          cp -r * hf-repo/  # Copy all files to the Hugging Face repo
-          cd hf-repo
-          git add .
-          git commit -m "Push from GitHub Actions"
-          git pushq
+          python -m pip install --upgrade pip
+          pip install requests pandas numpy plotly scikit-learn statsmodels streamlit nltk
+          
+      - name: Push to HF Hub
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          # Install huggingface_hub
+          pip install huggingface_hub
+          
+          # Configure git
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          
+          # Push to HF Hub
+          python -c "
+          from huggingface_hub import HfApi
+          api = HfApi()
+          api.create_repo(
+              'cve-analysis-platform',
+              private=True,
+              exist_ok=True
+          )
+          api.upload_folder(
+              folder_path='.',
+              repo_id='cve-analysis-platform',
+              token='${{ secrets.HF_TOKEN }}'
+          )
+          "
