@@ -1,0 +1,29 @@
+name: Push to Hugging Face
+
+on:
+  push:
+    branches:
+      - main  # Trigger on pushes to the main branch
+
+jobs:
+  push_to_hf:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Hugging Face CLI
+        run: pip install huggingface-hub
+
+      - name: Log in to Hugging Face
+        run: huggingface-cli login --token ${{ secrets.HF_TOKEN }}
+
+      - name: Push to Hugging Face
+        run: |
+          huggingface-cli repo create <repository-name> --type model --yes
+          git clone https://huggingface.co/<your-username>/<repository-name> hf-repo
+          cp -r * hf-repo/  # Copy all files to the Hugging Face repo
+          cd hf-repo
+          git add .
+          git commit -m "Push from GitHub Actions"
+          git pushq
