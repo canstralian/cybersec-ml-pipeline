@@ -1,5 +1,13 @@
 # ML Pipeline for Cybersecurity Purple Teaming 🛡️
 
+# ML Pipeline for Cybersecurity Purple Teaming 🛡️
+
+![Build Status](https://img.shields.io/github/actions/workflow/status/canstralian/cybersec-ml-pipeline/ci.yml)
+![License](https://img.shields.io/github/license/canstralian/cybersec-ml-pipeline)
+![Coverage](https://img.shields.io/codecov/c/github/canstralian/cybersec-ml-pipeline)
+![Contributors](https://img.shields.io/github/contributors/canstralian/cybersec-ml-pipeline)
+![GitHub issues](https://img.shields.io/github/issues/canstralian/cybersec-ml-pipeline)
+
 A scalable Streamlit-based machine learning pipeline platform specialized for cybersecurity purple-teaming, enabling advanced data processing and model training.
 
 ## Features 🚀
