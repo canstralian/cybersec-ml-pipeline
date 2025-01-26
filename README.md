@@ -1,7 +1,5 @@
 # ML Pipeline for Cybersecurity Purple Teaming 🛡️
 
-# ML Pipeline for Cybersecurity Purple Teaming 🛡️
-
 ![Build Status](https://img.shields.io/github/actions/workflow/status/canstralian/cybersec-ml-pipeline/ci.yml)
 ![License](https://img.shields.io/github/license/canstralian/cybersec-ml-pipeline)
 ![Coverage](https://img.shields.io/codecov/c/github/canstralian/cybersec-ml-pipeline)
@@ -58,6 +56,24 @@ streamlit run app.py
    - Interactive parameter tuning
    - Real-time performance metrics
    - Visual model evaluation
+
+## GitHub Actions for Hugging Face Hub
+
+To set up GitHub Actions for pushing to Hugging Face Hub, follow these steps:
+
+1. **Create a GitHub Actions workflow file**: The workflow file should be located at `.github/workflows/hf-push.yml`.
+
+2. **Trigger the workflow**: The workflow should be triggered on a push to the `main` branch.
+
+3. **Set up Python environment**: Ensure the Python version is set to 3.11.
+
+4. **Install dependencies**: Install the necessary dependencies including `requests`, `pandas`, `numpy`, `plotly`, `scikit-learn`, `statsmodels`, `streamlit`, `nltk`, and `huggingface_hub`.
+
+5. **Retrieve Hugging Face token**: The Hugging Face token (`HF_TOKEN`) should be retrieved from the GitHub secrets and set as an environment variable.
+
+6. **Push to Hugging Face Hub**: Use the `huggingface_hub` library to push the repository contents to the Hugging Face Hub.
+
+Make sure you have the `HF_TOKEN` secret set up in your GitHub repository settings to authenticate with Hugging Face Hub.
 
 ## Contributing 🤝
 
