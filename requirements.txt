@@ -7,3 +7,4 @@ seaborn
 dask
 joblib
 huggingface_hub
+flake8
