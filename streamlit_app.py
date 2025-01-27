@@ -54,14 +54,22 @@ def display_feature_engineering(df):
 
         st.subheader("Advanced Features")
         use_polynomial = st.checkbox("Use Polynomial Features")
-        poly_degree = st.slider("Polynomial Degree", 2, 5, 2) if use_polynomial else None
+        poly_degree = (
+            st.slider("Polynomial Degree", 2, 5, 2) if use_polynomial else None
+        )
 
         use_feature_selection = st.checkbox("Use Feature Selection")
-        k_best_features = st.slider("Number of Best Features", 5, 50, 10) if use_feature_selection else None
+        k_best_features = (
+            st.slider("Number of Best Features", 5, 50, 10)
+            if use_feature_selection else None
+        )
 
     with col4:
         use_pca = st.checkbox("Use PCA")
-        n_components = st.slider("PCA Components (%)", 1, 100, 95) / 100.0 if use_pca else None
+        n_components = (
+            st.slider("PCA Components (%)", 1, 100, 95) / 100.0
+            if use_pca else None
+        )
 
         add_cyber_features = st.checkbox("Add Cybersecurity Features")
         feature_cols = st.multiselect(
@@ -84,23 +92,37 @@ def display_feature_engineering(df):
         'add_cyber_features': add_cyber_features
     }
 
-    return feature_engineering_config, feature_cols, target_col, handling_strategy, scaling_method
+    return (
+        feature_engineering_config, feature_cols, target_col,
+        handling_strategy, scaling_method
+    )
 
 def display_model_configuration():
     st.header("3. Model Configuration")
     col5, col6 = st.columns(2)
 
     with col5:
-        n_estimators = st.slider("Number of Trees", min_value=10, max_value=500, value=100)
-        max_depth = st.slider("Max Depth", min_value=1, max_value=50, value=10)
+        n_estimators = st.slider(
+            "Number of Trees", min_value=10, max_value=500, value=100
+        )
+        max_depth = st.slider(
+            "Max Depth", min_value=1, max_value=50, value=10
+        )
 
     with col6:
-        min_samples_split = st.slider("Min Samples Split", min_value=2, max_value=20, value=2)
-        min_samples_leaf = st.slider("Min Samples Leaf", min_value=1, max_value=10, value=1)
+        min_samples_split = st.slider(
+            "Min Samples Split", min_value=2, max_value=20, value=2
+        )
+        min_samples_leaf = st.slider(
+            "Min Samples Leaf", min_value=1, max_value=10, value=1
+        )
 
     return n_estimators, max_depth, min_samples_split, min_samples_leaf
 
-def display_results(metrics, model, feature_cols, use_polynomial, X_train, y_test, X_test):
+def display_results(
+    metrics, model, feature_cols, use_polynomial,
+    X_train, y_test, X_test
+):
     st.header("4. Results and Visualizations")
     col7, col8 = st.columns(2)
 
@@ -121,7 +143,9 @@ def display_results(metrics, model, feature_cols, use_polynomial, X_train, y_tes
                 model_path, metadata_path = save_model(
                     model, feature_cols, preprocessing_params, metrics, model_name
                 )
-                st.success(f"Model saved successfully! Files:\n- {model_path}\n- {metadata_path}")
+                st.success(
+                    f"Model saved successfully! Files:\n- {model_path}\n- {metadata_path}"
+                )
             except Exception as e:
                 st.error(f"Error saving model: {str(e)}")
 
@@ -129,7 +153,10 @@ def display_results(metrics, model, feature_cols, use_polynomial, X_train, y_tes
         if not use_pca:
             st.subheader("Feature Importance")
             fig_importance = visualizer.plot_feature_importance(
-                model, feature_cols if not use_polynomial else [f"Feature_{i}" for i in range(X_train.shape[1])]
+                model,
+                feature_cols if not use_polynomial else [
+                    f"Feature_{i}" for i in range(X_train.shape[1])
+                ]
             )
             st.pyplot(fig_importance)
 
@@ -173,14 +200,23 @@ def main():
 
             display_data_overview(df)
 
-            feature_engineering_config, feature_cols, target_col, handling_strategy, scaling_method = display_feature_engineering(df)
+            (
+                feature_engineering_config, feature_cols, target_col,
+                handling_strategy, scaling_method
+            ) = display_feature_engineering(df)
 
-            n_estimators, max_depth, min_samples_split, min_samples_leaf = display_model_configuration()
+            (
+                n_estimators, max_depth, min_samples_split,
+                min_samples_leaf
+            ) = display_model_configuration()
 
             if st.button("Train Model"):
                 with st.spinner("Processing data and training model..."):
-                    X_train, X_test, y_train, y_test = processor.process_data(
-                        df, feature_cols, target_col, handling_strategy, scaling_method, feature_engineering_config
+                    (
+                        X_train, X_test, y_train, y_test
+                    ) = processor.process_data(
+                        df, feature_cols, target_col, handling_strategy,
+                        scaling_method, feature_engineering_config
                     )
 
                     model, metrics = trainer.train_model(
@@ -191,7 +227,10 @@ def main():
                         min_samples_leaf=min_samples_leaf
                     )
 
-                    display_results(metrics, model, feature_cols, use_polynomial, X_train, y_test, X_test)
+                    display_results(
+                        metrics, model, feature_cols, use_polynomial,
+                        X_train, y_test, X_test
+                    )
         except Exception as e:
             st.error(f"Error: {str(e)}")
     else:
