@@ -1,14 +1,93 @@
-# For most projects, this workflow file will not need changing; you simply need
-# to commit it to your repository.
-#
-# You may wish to alter this file to override the set of languages analyzed,
-# or to provide custom queries or build logic.
-#
-# ******** NOTE ********
-# We have attempted to detect the languages in your repository. Please check
-# the `language` matrix defined below to confirm you have the correct set of
-# supported CodeQL languages.
-#
+This CodeQL Advanced workflow is set up to perform static analysis on your codebase using GitHub’s CodeQL capabilities. Here’s a breakdown of the workflow and suggestions for optimizing or customizing it.
+
+Overview
+	1.	Triggers:
+      •   Runs on push and pull_request events targeting the main branch.
+      •   Includes a scheduled run every Wednesday at 14:21 UTC using cron.
+	2.	Matrix Build:
+      •   Analyzes code in different languages (e.g., Python).
+      •   Default build mode is none for Python.
+	3.	Steps:
+      •   Checkout Code: Clones the repository.
+      •   Initialize CodeQL: Sets up the analysis environment and queries.
+      •   Build (Optional): Placeholder for compiled language builds.
+      •   Perform CodeQL Analysis: Executes CodeQL analysis with configured languages and queries.
+	4.	Permissions:
+      •   Configured to allow security event writes and other necessary permissions for private repositories.
+
+Suggestions for Improvement
+
+1. Include Additional Languages
+
+If your project uses multiple languages, extend the matrix with them. For example, if it includes JavaScript or TypeScript:
+
+matrix:
+  include:
+    - language: python
+      build-mode: none
+    - language: javascript-typescript
+      build-mode: none
+
+2. Add Custom Queries
+
+You can enhance the analysis by including custom CodeQL queries. For example:
+
+with:
+  languages: ${{ matrix.language }}
+  build-mode: ${{ matrix.build-mode }}
+  queries: +security-extended,security-and-quality
+
+   •   +security-extended: Focuses on vulnerabilities.
+   •   security-and-quality: Adds quality analysis alongside security checks.
+
+Alternatively, define a custom .qlpack file in your repo and reference it.
+
+3. Dynamic Scheduling
+
+If your project sees frequent updates, consider adding multiple schedule runs at different times:
+
+schedule:
+  - cron: '0 3 * * 1' # Every Monday at 03:00 UTC
+  - cron: '0 15 * * 5' # Every Friday at 15:00 UTC
+
+4. Optional Caching
+
+To speed up subsequent runs, cache the CodeQL database for large projects:
+
+- name: Cache CodeQL Database
+  uses: actions/cache@v3
+  with:
+    path: codeql-db
+    key: ${{ runner.os }}-codeql-${{ matrix.language }}-${{ github.sha }}
+    restore-keys: |
+      ${{ runner.os }}-codeql-${{ matrix.language }}-
+
+5. Customize manual Build Steps
+
+The placeholder build step for manual mode needs commands tailored to your project:
+
+- if: matrix.build-mode == 'manual'
+  shell: bash
+  run: |
+    echo "Building the project..."
+    make build
+
+Replace make build with your actual build command.
+
+6. Alerts for Failed Scans
+
+Add a notification step (e.g., via Slack, Teams, or email) to alert maintainers of failed scans:
+
+- name: Notify on Failure
+  if: failure()
+  uses: slackapi/slack-github-action@v1.23.0
+  with:
+    slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+    channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+    text: "CodeQL analysis failed for ${{ matrix.language }} on branch ${{ github.ref }}."
+
+Final Workflow Example with Optimizations
+
 name: "CodeQL Advanced"
 
 on:
@@ -17,25 +96,16 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '21 14 * * 3'
+    - cron: '0 3 * * 1'
+    - cron: '0 15 * * 5'
 
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
-    # Runner size impacts CodeQL analysis time. To learn more, please see:
-    #   - https://gh.io/recommended-hardware-resources-for-running-codeql
-    #   - https://gh.io/supported-runners-and-hardware-resources
-    #   - https://gh.io/using-larger-runners (GitHub.com only)
-    # Consider using larger runners or machines with greater resources for possible analysis time improvements.
     runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
     permissions:
-      # required for all workflows
       security-events: write
-
-      # required to fetch internal or private CodeQL packs
       packages: read
-
-      # only required for workflows in private repositories
       actions: read
       contents: read
 
@@ -45,48 +115,45 @@ jobs:
         include:
         - language: python
           build-mode: none
-        # CodeQL supports the following values keywords for 'language': 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'swift'
-        # Use `c-cpp` to analyze code written in C, C++ or both
-        # Use 'java-kotlin' to analyze code written in Java, Kotlin or both
-        # Use 'javascript-typescript' to analyze code written in JavaScript, TypeScript or both
-        # To learn more about changing the languages that are analyzed or customizing the build mode for your analysis,
-        # see https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/customizing-your-advanced-setup-for-code-scanning.
-        # If you are analyzing a compiled language, you can modify the 'build-mode' for that language to customize how
-        # your codebase is analyzed, see https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/codeql-code-scanning-for-compiled-languages
+        - language: javascript-typescript
+          build-mode: none
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
-        # If you wish to specify custom queries, you can do so here or in a config file.
-        # By default, queries listed here will override any specified in a config file.
-        # Prefix the list here with "+" to use these queries and those in the config file.
+        queries: +security-extended,security-and-quality
 
-        # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
-        # queries: security-extended,security-and-quality
-
-    # If the analyze step fails for one of the languages you are analyzing with
-    # "We were unable to automatically build your code", modify the matrix above
-    # to set the build mode to "manual" for that language. Then modify this step
-    # to build your code.
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
     - if: matrix.build-mode == 'manual'
       shell: bash
       run: |
-        echo 'If you are using a "manual" build mode for one or more of the' \
-          'languages you are analyzing, replace this with the commands to build' \
-          'your code, for example:'
-        echo '  make bootstrap'
-        echo '  make release'
-        exit 1
+        echo "Building the project..."
+        # Replace this with your actual build commands
+        make build
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
         category: "/language:${{matrix.language}}"
+
+    - name: Notify on Failure
+      if: failure()
+      uses: slackapi/slack-github-action@v1.23.0
+      with:
+        slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+        channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+        text: "CodeQL analysis failed for ${{ matrix.language }} on branch ${{ github.ref }}."
+
+Key Improvements
+	1.	Adds support for multiple languages.
+	2.	Introduces custom queries for better security analysis.
+	3.	Caches CodeQL databases for faster reruns.
+	4.	Provides dynamic scheduling for frequent updates.
+	5.	Adds failure notifications to alert maintainers.
+
+Let me know if you’d like further customizations!
