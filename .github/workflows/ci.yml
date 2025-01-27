@@ -44,3 +44,7 @@ jobs:
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: true
+
+    - name: Report linting errors
+      if: failure()
+      run: echo "Linting errors found. Please fix them before merging."
