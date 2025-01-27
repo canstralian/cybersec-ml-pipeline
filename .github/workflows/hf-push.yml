@@ -19,8 +19,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests pandas numpy plotly scikit-learn statsmodels streamlit nltk huggingface_hub
+          pip install -r requirements.txt
           
+      - name: Run tests
+        run: |
+          python -m unittest discover -s tests
+      
       - name: Push to HF Hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -38,12 +42,15 @@ jobs:
           api = HfApi()
 
           # Create repo (or ensure it exists)
-          api.create_repo(
-              repo_id='canstralian/cve-analysis-platform',
-              private=True,
-              exist_ok=True,
-              token=hf_token
-          )
+          try:
+              api.create_repo(
+                  repo_id='canstralian/cve-analysis-platform',
+                  private=True,
+                  exist_ok=True,
+                  token=hf_token
+              )
+          except Exception as e:
+              print(f'Repo creation error: {e}')
 
           # Upload folder contents
           api.upload_folder(
