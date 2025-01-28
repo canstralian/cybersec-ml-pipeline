@@ -2,13 +2,14 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from imblearn.over_sampling import SMOTE
 from sklearn.decomposition import PCA
+
 
 class EnhancedModelTrainer:
     def __init__(self):
@@ -118,6 +119,7 @@ class EnhancedModelTrainer:
         except Exception as e:
             raise Exception(f"Error in evaluation: {str(e)}")
 
+
 # Example Usage
 if __name__ == "__main__":
     # Mock dataset (replace with your actual dataset)
@@ -134,7 +136,9 @@ if __name__ == "__main__":
     categorical_features = ['Category']
     numerical_features = ['Feature1', 'Feature2']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
 
     # Initialize and preprocess
     trainer = EnhancedModelTrainer()
@@ -144,7 +148,10 @@ if __name__ == "__main__":
     X_test_processed = preprocessor.transform(X_test)
 
     # Train and evaluate
-    trained_pipeline = trainer.train_model(X_train_processed, y_train_processed, n_estimators=200, max_depth=15)
+    trained_pipeline = trainer.train_model(
+        X_train_processed, y_train_processed,
+        n_estimators=200, max_depth=15
+    )
     metrics = trainer.evaluate_model(X_test_processed, y_test)
 
     print("Evaluation Metrics:", metrics)
