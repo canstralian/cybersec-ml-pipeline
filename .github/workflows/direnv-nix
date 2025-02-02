@@ -1,0 +1,21 @@
+            - name: direnv-nix
+  # You may pin to the exact commit or the version.
+  # uses: JRMurr/direnv-nix-action@f99b4b2266566628bb661ff0f8a88bc6a3bfe97b
+  uses: JRMurr/direnv-nix-action@v4.1.0
+  with:
+    # Prefix for nix store cache key
+    nix-cache-prefix: # optional, default is nix-store
+    # Include nix installation; disable if you installed it before
+    install-nix: # optional, default is true
+    # Cache nix store
+    cache-store: # optional, default is true
+    # Export all ENV vars direnv would touch, not just the PATH
+    export-all-vars: # optional, default is true
+    # Installation URL that will contain a script to install Nix.
+    nix_install_url: # optional, default is https://nixos.org/nix/install
+    # If installing nix, Set NIX_PATH environment variable.
+    nix_path: # optional, default is nixpkgs=channel:nixos-unstable
+    # If installing nix, Set NIX_PATH environment variable.
+    extra_nix_config: # optional, default is sandbox = false
+
+          
